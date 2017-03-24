@@ -1,0 +1,1 @@
+/opt/api/cbi/infographie/fenetrage/301/Bilat_Fenetrage_Displayable_GL/INC/primitives/GLPrimitiveDrawers.h

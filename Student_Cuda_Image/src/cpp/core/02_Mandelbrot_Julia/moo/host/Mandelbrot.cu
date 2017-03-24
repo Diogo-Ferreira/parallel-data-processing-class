@@ -42,7 +42,7 @@ extern __global__ void mandel(uchar4* ptrDevPixels,uint w, uint h,float t,Domain
  \*-------------------------*/
 
 Mandelbrot::Mandelbrot(const Grid& grid, uint w, uint h, float dt,const DomaineMath& domaineMath) :
-	Animable_I<uchar4>(grid, w, h, "Mandelbrot_Cuda_RGBA_uchar4",domaineMath), variateurAnimation(Interval<float>(0, 120), 1)
+	Animable_I<uchar4>(grid, w, h, "Mandelbrot_Cuda_RGBA_uchar4",domaineMath), variateurAnimation(Interval<float>(20, 120), dt)
     {
     assert(w == h); // specific rippling
 
@@ -75,7 +75,7 @@ void Mandelbrot::process(uchar4* ptrDevPixels, uint w, uint h, const DomaineMath
     // TODO lancer le kernel avec <<<dg,db>>>
     // le kernel est importer ci-dessus (ligne 19)
 
-    //float t=variateurAnimation.get();
+    float t=variateurAnimation.get();
     mandel<<<dg,db>>> (ptrDevPixels,w,h,t,domaineMath);
 
     Device::lastCudaError("rippling rgba uchar4 (after kernel)"); // facultatif, for debug only, remove for release

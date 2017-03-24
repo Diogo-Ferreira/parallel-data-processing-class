@@ -39,7 +39,7 @@ using namespace gpu;
 Animable_I<uchar4>* MandelbrotProvider::createAnimable()
     {
     // Animation;
-    float dt = 2 * PI / 10;
+    float dt = 0.2f;
 
     DomaineMath domaineMath = DomaineMath(-2.1, -1.3, 0.8, 1.3);
 

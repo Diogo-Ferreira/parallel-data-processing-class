@@ -45,7 +45,7 @@ extern __global__ void raytrace_cm(uchar4* ptrDevPixels, uint w, uint h, float t
  \*-------------------------*/
 
 Raytracing::Raytracing(const Grid& grid, uint w, uint h, float dt) :
-	Animable_I<uchar4>(grid, w, h, "Raytracing_Cuda_RGBA_uchar4"), variateurAnimation(Interval<float>(0, 120), 0.1f)
+	Animable_I<uchar4>(grid, w, h, "Raytracing_Cuda_RGBA_uchar4"), variateurAnimation(Interval<float>(0, 120),dt)
     {
     assert(w == h); // specific rippling
 
@@ -61,10 +61,9 @@ Raytracing::Raytracing(const Grid& grid, uint w, uint h, float dt) :
     this->size_octets = sizeof(Sphere) * this->nbSphere;
 
     // transfert to GM
-    //toGM(ptrTabSphere); // a implemneter
-    // transfert to CM
-    //toCM(ptrTabSphere); // a implemneter
+    toGM(ptrTabSphere); // a implemneter
 
+    // transfert to CM
     fillCM(ptrTabSphere);
 
     }
@@ -77,11 +76,6 @@ Raytracing::~Raytracing()
 /*-------------------------*\
  |*	Methode		    *|
  \*-------------------------*/
-
-void Raytracing::toCM(Sphere* ptrDevSphereCreator)
-    {
-
-    }
 
 void Raytracing::toGM(Sphere* ptrSphere)
     {
@@ -110,9 +104,9 @@ void Raytracing::process(uchar4* ptrDevPixels, uint w, uint h, const DomaineMath
     // TODO lancer le kernel avec <<<dg,db>>>
     // le kernel est importer ci-dessus (ligne 19)
 
-    //float t=variateurAnimation.get();
-    //raytrace<<<dg,db>>> (ptrDevPixels,this->ptrDevTabSphere,this->nbSphere,w,h,t);
-    raytrace_cm<<<dg,db>>> (ptrDevPixels,w,h,t);
+    t=variateurAnimation.get();
+    raytrace<<<dg,db>>> (ptrDevPixels,this->ptrDevTabSphere,this->nbSphere,w,h,t);
+    //raytrace_cm<<<dg,db>>> (ptrDevPixels,w,h,t);
 
     Device::lastCudaError("rippling rgba uchar4 (after kernel)"); // facultatif, for debug only, remove for release
     }

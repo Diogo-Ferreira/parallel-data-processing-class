@@ -44,11 +44,12 @@ class RaytraceMath
 	__device__
 	void colorIJ(uchar4* ptrColorIJ, int i, int j, float t)
 	    {
+	    int nearestIndex = -1;
+	    float bestDz = 0;
+	    getNearestSphereFromPoint(i, j,&nearestIndex,&bestDz);
+	    Sphere *nearest = &tabSphere[nearestIndex];
 
-
-	    Sphere* nearest = getNearestSphereFromPoint(i, j);
-
-	    if (nearest == NULL)
+	    if (nearest == nullptr)
 		{
 		ptrColorIJ->x = 0;
 		ptrColorIJ->y = 0;
@@ -56,18 +57,15 @@ class RaytraceMath
 		}
 	    else
 		{
-		float hc = nearest->hCarre(make_float2(j, i));
-		float dz = nearest->dz(hc);
-		ColorTools::HSB_TO_RVB(nearest->hue(t), 1, nearest->brightness(dz), ptrColorIJ);
+		ColorTools::HSB_TO_RVB(nearest->hue(t), 1, nearest->brightness(bestDz), ptrColorIJ);
 		}
 	    ptrColorIJ->w = 255; //opaque
 	    }
 
 	__device__
-	Sphere* getNearestSphereFromPoint(int i, int j)
+	void getNearestSphereFromPoint(int i, int j, int* nearestSphereIndex,float* bestDz)
 	    {
 	    float currentNearestDistance = FLT_MAX;
-	    Sphere* currentNearestSphere = nullptr;
 
 	    int s = 0;
 	    float2 pos = make_float2(j,i);
@@ -75,37 +73,26 @@ class RaytraceMath
 		{
 		Sphere currentSphere = tabSphere[s];
 		float hCarre = currentSphere.hCarre(pos);
-		bool estAbove = currentSphere.isEnDessous(hCarre);
+		int estAbove = currentSphere.isEnDessous(hCarre);
 
-		if (estAbove)
+		float dz = currentSphere.dz(hCarre);
+		float range = currentSphere.distance(dz);
+
+		// Si estAbove == False donc 0 currentNearestDistance sera forcément plus petite que range
+		if (range < currentNearestDistance * estAbove)
 		    {
-		    float dz = currentSphere.dz(hCarre);
-		    float range = currentSphere.distance(dz);
-
-		    if (range < currentNearestDistance)
-			{
-			currentNearestDistance = range;
-			currentNearestSphere = &tabSphere[s];
-			}
+		    currentNearestDistance = range;
+		    *nearestSphereIndex = s;
+		    *bestDz = dz;
 		    }
 
 		s++;
 		}
-
-	    return currentNearestSphere;
 	    }
 
     private:
 
-	float hueSphere(float t, float hStart)
-	    {
-	    return 0.5f + 0.5f * sinf(t + 1.5f * PI_FLOAT + T(hStart));
-	    }
 
-	float T(float hStart)
-	    {
-	    return asinf(2.0f * hStart - 1) - 1.5f * PI_FLOAT;
-	    }
 
 	/*--------------------------------------*\
 	|*		Attribut			*|

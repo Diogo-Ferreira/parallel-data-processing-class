@@ -24,7 +24,7 @@ class RipplingMath
 	__device__
 	RipplingMath(uint w, uint h)
 	    {
-	    this->dim2 = w / h;
+	    this->dim2 = w / 2.0f;
 	    }
 
 	// constructeur copie: pas besoin car pas attribut ptr
@@ -75,7 +75,9 @@ class RipplingMath
 	__device__
 	void dij(int i, int j, float* ptrResult)
 	    {
-	    *ptrResult = sqrtf( powf((i-this->dim2),2.0f) + powf((j-this->dim2),2.0f));
+	    //La fonction powf semble donner des résultat bizarres (négatifs), perte de précision du float
+	    //*ptrResult = sqrtf( powf((i-this->dim2),2) + powf((j-this->dim2),2));
+	    *ptrResult = sqrtf( (i-this->dim2)*(i-this->dim2) + (j-this->dim2)*(j-this->dim2));
 	    }
 
 	/*--------------------------------------*\

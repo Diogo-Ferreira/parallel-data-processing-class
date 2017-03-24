@@ -7,7 +7,7 @@
 
 #include "RaytracingProvider.h"
 #include "MandelbrotProvider.h"
-
+#include "RipplingProvider.h"
 #include "Settings_GPU.h"
 #include "Viewer_GPU.h"
 using namespace gpu;
@@ -52,9 +52,13 @@ int mainImage(Settings& settings)
     ImageOption zoomable(true);
     ImageOption nozoomable(false);
 
-    //Viewer<RipplingProvider> vague(nozoomable, 25, 25); // imageOption px py
-    //Viewer<MandelbrotProvider> mandelbrot(zoomable,25,25);
-    Viewer<RaytracingProvider> raytracing(nozoomable,25,25);
+    //Viewer<RipplingProvider> vague(nozoomable, 0, 0); // imageOption px py
+    Viewer<MandelbrotProvider> mandelbrot(zoomable,400,0);
+    //Viewer<RaytracingProvider> raytracing(nozoomable,800,0);
+
+
+    //raytracing.setSize(400, 400);
+
     // Common
     GLUTImageViewers::runALL(); // Bloquant, Tant qu'une fenetre est ouverte
 

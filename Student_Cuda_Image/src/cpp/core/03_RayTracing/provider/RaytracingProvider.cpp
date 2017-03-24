@@ -39,7 +39,7 @@ using namespace gpu;
 Animable_I<uchar4>* RaytracingProvider::createAnimable()
     {
     // Animation;
-    float dt = 2 * PI / 10;
+    float dt = 2 * PI / 1000.0f;
     // Dimension
     int dw = 16 * 60;
     int dh = 16 * 60;
@@ -48,8 +48,8 @@ Animable_I<uchar4>* RaytracingProvider::createAnimable()
     int mp = Device::getMPCount();
     int coreMP = Device::getCoreCountMP();
 
-    dim3 dg = dim3(10,10,1);
-    dim3 db = dim3(8,8,1);
+    dim3 dg = dim3(mp,2,1);
+    dim3 db = dim3(coreMP,2,1);
     Grid grid(dg,db);  // TODO definissez une grille cuda (dg, db)
 
     return new Raytracing(grid, dw, dh, dt);

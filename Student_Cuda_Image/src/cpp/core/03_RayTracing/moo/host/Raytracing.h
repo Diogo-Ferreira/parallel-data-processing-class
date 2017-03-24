@@ -31,8 +31,6 @@ class Raytracing: public Animable_I<uchar4>
 	 \*-------------------------------------*/
 
 	void toGM(Sphere* ptrSphere);
-	void toCM(Sphere* ptrDevSphere);
-
 	void fillCM(Sphere* ptrSphere);
 
 

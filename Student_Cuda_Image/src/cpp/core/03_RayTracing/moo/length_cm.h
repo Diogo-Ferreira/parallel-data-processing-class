@@ -1,3 +1,3 @@
 #pragma once
 
-#define LENGTH_CM 30
+#define LENGTH_CM 10

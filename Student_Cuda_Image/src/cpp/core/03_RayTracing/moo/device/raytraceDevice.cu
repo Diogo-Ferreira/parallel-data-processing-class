@@ -45,21 +45,7 @@ __device__ void work(uchar4* ptrDevPixels,Sphere* ptrDevSphere, int n, uint w, u
 
 __global__ void raytrace(uchar4* ptrDevPixels, Sphere* ptrDevTabSphere, int nbSpheres, uint w, uint h, float t)
     {
-    RaytraceMath raytraceMath = RaytraceMath(w, h, ptrDevTabSphere, nbSpheres);
-
-    const int TID = Indice2D::tid();
-    const int NB_THREADS = Indice2D::nbThread();
-    const int WH = w * h;
-    int i;
-    int j;
-    int s = TID;
-
-    while (s < WH)
-	{
-	IndiceTools::toIJ(s, w, &i, &j);
-	raytraceMath.colorIJ(&ptrDevPixels[s], i, j, t);
-	s += NB_THREADS;
-	}
+    work(ptrDevPixels, ptrDevTabSphere, nbSpheres, w, h, t);
     }
 
 // Déclaration Constante globale
