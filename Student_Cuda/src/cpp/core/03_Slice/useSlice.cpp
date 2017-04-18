@@ -44,8 +44,8 @@ bool useSlice()
     int mp = Device::getMPCount();
     int coreMP = Device::getCoreCountMP();
 
-    dim3 dg = dim3(64, 1, 1);  		// disons, a optimiser selon le gpu, peut drastiquement ameliorer ou baisser les performances
-    dim3 db = dim3(1024, 1, 1);   	// disons, a optimiser selon le gpu, peut drastiquement ameliorer ou baisser les performances
+    dim3 dg = dim3(32, 1, 1);  		// disons, a optimiser selon le gpu, peut drastiquement ameliorer ou baisser les performances
+    dim3 db = dim3(512, 1, 1);   	// disons, a optimiser selon le gpu, peut drastiquement ameliorer ou baisser les performances
     Grid grid(dg, db);
     Slice slice(grid, n);
     slice.run();

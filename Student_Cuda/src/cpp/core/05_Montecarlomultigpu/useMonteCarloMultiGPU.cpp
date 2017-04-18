@@ -1,6 +1,10 @@
 #include <iostream>
-#include <stdlib.h>
+#include "Grid.h"
+#include "Device.h"
+#include "MathTools.h"
+#include "limits.h"
 
+#include "montecarlomultigpu.h"
 
 using std::cout;
 using std::endl;
@@ -13,24 +17,15 @@ using std::endl;
  |*		Imported	 	*|
  \*-------------------------------------*/
 
-extern bool useHello(void);
-extern bool useAddVecteur(void);
-extern bool useSlice(void);
-
-extern bool useMonteCarlo(void);
-extern bool useMonteCarloMultiGPU(void);
-
 /*--------------------------------------*\
  |*		Public			*|
  \*-------------------------------------*/
 
-int mainCore();
+bool useMonteCarloMultiGPU(void);
 
 /*--------------------------------------*\
  |*		Private			*|
  \*-------------------------------------*/
-
-
 
 /*----------------------------------------------------------------------*\
  |*			Implementation 					*|
@@ -40,26 +35,31 @@ int mainCore();
  |*		Public			*|
  \*-------------------------------------*/
 
-int mainCore()
+bool useMonteCarloMultiGPU()
     {
-    bool isOk = true;
-    //isOk &= useHello();
-    //isOk &=useAddVecteur();
-    //isOk &= useSlice();
-    //isOk &= useMonteCarlo();
-    isOk &= useMonteCarloMultiGPU();
+    int n = 1000000;//INT_MAX/1.001;
+    // Partie interessante GPGPU
 
-    cout << "\nisOK = " << isOk << endl;
-    cout << "\nEnd : mainCore" << endl;
+    // Grid cuda
+    int mp = Device::getMPCount();
+    int coreMP = Device::getCoreCountMP();
 
-    return isOk ? EXIT_SUCCESS : EXIT_FAILURE;
+    dim3 dg = dim3(32, 1, 1);  		// disons, a optimiser selon le gpu, peut drastiquement ameliorer ou baisser les performances
+    dim3 db = dim3(512, 1, 1);   	// disons, a optimiser selon le gpu, peut drastiquement ameliorer ou baisser les performances
+    Grid grid(dg, db);
+    Montecarlomultigpu monteCarlo(grid, -1.0f, 1.0f, 1.0f,INT_MAX);
+    monteCarlo.run();
+    //AddVector addVector(grid, ptrV1, ptrV2, ptrW, n); // on passse la grille à AddVector pour pouvoir facilement la faire varier de l'extérieur (ici) pour trouver l'optimum
+    //addVector.run();
+
+    cout << "PI : " << monteCarlo.piHat << endl;
+
+    return true;
     }
 
 /*--------------------------------------*\
  |*		Private			*|
  \*-------------------------------------*/
-
-
 
 /*----------------------------------------------------------------------*\
  |*			End	 					*|
