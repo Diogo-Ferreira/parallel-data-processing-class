@@ -11,6 +11,15 @@ __global__ void histogramd(int* ptrTabData, int tabSize, int *ptrDevResult)
     {
     extern __shared__ int tabSM[];
 
+    if (Indice2D::tidLocal() == 0)
+    	{
+    		for (int i = 0; i < 256; i++)
+    		{
+    			tabSM[i] = 0;
+    		}
+    	}
+    __syncthreads();
+
 
     reductionIntraThread(ptrTabData, tabSize, tabSM);
     __syncthreads();
@@ -20,7 +29,6 @@ __global__ void histogramd(int* ptrTabData, int tabSize, int *ptrDevResult)
 __device__ void reductionIntraThread(int *ptrTabData, int tabSize, int *tabSM)
     {
     const int NB_THREAD = Indice2D::nbThread();
-    const int TID_LOCAL = Indice2D::tidLocal();
     const int TID = Indice2D::tid();
 
     int s = TID;
