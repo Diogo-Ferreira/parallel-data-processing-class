@@ -27,10 +27,12 @@ using namespace gpu;
  |*		Public			*|
  \*-------------------------------------*/
 
-__global__ void raytrace(uchar4* ptrDevPixels, Sphere* ptrDevTabSphere, int nbSpheres, uint w, uint h, float t);
+__global__ void raytraceGM(uchar4* ptrDevPixels, Sphere* ptrDevTabSphere, int nbSpheres, uint w, uint h, float t);
 __host__ void uploadGPU(Sphere* tabValue);
-__global__ void raytrace_cm(uchar4* ptrDevPixels, uint w, uint h, float t);
+__global__ void raytraceCM(uchar4* ptrDevPixels, uint w, uint h, float t);
 __device__ void work(uchar4* ptrDevPixels,Sphere* ptrDevSphere, int n, uint w, uint h, float t);
+__global__ void rayTracingSM(uchar4* ptrDevPixels, uint w, uint h, float dt, Sphere* ptrDevTabSphere);
+__device__ void copyGMtoSM(Sphere* ptrDevTabSphere, Sphere* tab_SM);
 /*--------------------------------------*\
  |*		Private			*|
  \*-------------------------------------*/
@@ -43,7 +45,7 @@ __device__ void work(uchar4* ptrDevPixels,Sphere* ptrDevSphere, int n, uint w, u
  |*		Public			*|
  \*-------------------------------------*/
 
-__global__ void raytrace(uchar4* ptrDevPixels, Sphere* ptrDevTabSphere, int nbSpheres, uint w, uint h, float t)
+__global__ void raytraceGM(uchar4* ptrDevPixels, Sphere* ptrDevTabSphere, int nbSpheres, uint w, uint h, float t)
     {
     work(ptrDevPixels, ptrDevTabSphere, nbSpheres, w, h, t);
     }
@@ -60,12 +62,34 @@ __host__ void uploadGPU(Sphere* tabValue)
     HANDLE_ERROR(cudaMemcpyToSymbol(SPHERE_CM, tabValue, size, offset, cudaMemcpyHostToDevice));
     }
 
-__global__ void raytrace_cm(uchar4* ptrDevPixels, uint w, uint h, float t)
+__device__ void copyGMtoSM(Sphere* ptrDevTabSphere, Sphere* tab_SM)
+    {
+    const int TID_LOCAL = Indice2D::tidLocal();
+    const int NB_THREAD_LOCAL = Indice2D::nbThreadLocal();
+    int s = TID_LOCAL;
+    int NB_SPHERE = LENGTH_CM;
+
+    while (s < NB_SPHERE)
+	{
+	tab_SM[s] = ptrDevTabSphere[s];
+	s += NB_THREAD_LOCAL;
+	}
+    }
+
+__global__ void raytraceCM(uchar4* ptrDevPixels, uint w, uint h, float t)
     {
 
     work(ptrDevPixels, SPHERE_CM, LENGTH_CM, w, h, t);
     }
 
+__global__ void rayTracingSM(uchar4* ptrDevPixels, uint w, uint h, float t, Sphere* ptrDevTabSphere)
+    {
+    extern __shared__ Sphere tab_SM[];
+    copyGMtoSM(ptrDevTabSphere, tab_SM);
+
+    __syncthreads();
+    work(ptrDevPixels, tab_SM, LENGTH_CM, w, h, t);
+    }
 __device__ void work(uchar4* ptrDevPixels,Sphere* ptrDevSphere, int n, uint w, uint h, float t)
 {
     RaytraceMath raytraceMath = RaytraceMath(w, h, ptrDevSphere, n);

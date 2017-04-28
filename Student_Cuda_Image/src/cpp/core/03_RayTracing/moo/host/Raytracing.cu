@@ -21,9 +21,10 @@ using std::endl;
  |*		Imported	 	*|
  \*-------------------------------------*/
 
-extern __global__ void raytrace(uchar4* ptrDevPixels,Sphere* ptrDevTabSphere,int nbSpheres,uint w, uint h,float t);
+extern __global__ void raytraceGM(uchar4* ptrDevPixels,Sphere* ptrDevTabSphere,int nbSpheres,uint w, uint h,float t);
 extern __host__ void uploadGPU(Sphere* tabValue);
-extern __global__ void raytrace_cm(uchar4* ptrDevPixels, uint w, uint h, float t);
+extern __global__ void raytraceCM(uchar4* ptrDevPixels, uint w, uint h, float t);
+extern __global__ void rayTracingSM(uchar4* ptrDevPixels, uint w, uint h, float dt, Sphere* ptrDevTabSphere);
 /*--------------------------------------*\
  |*		Public			*|
  \*-------------------------------------*/
@@ -105,9 +106,23 @@ void Raytracing::process(uchar4* ptrDevPixels, uint w, uint h, const DomaineMath
     // le kernel est importer ci-dessus (ligne 19)
 
     t=variateurAnimation.get();
-    raytrace<<<dg,db>>> (ptrDevPixels,this->ptrDevTabSphere,this->nbSphere,w,h,t);
+    //raytrace<<<dg,db>>> (ptrDevPixels,this->ptrDevTabSphere,this->nbSphere,w,h,t);
     //raytrace_cm<<<dg,db>>> (ptrDevPixels,w,h,t);
+    static int i = 0;
 
+    if (i % 3 == 0)
+    {
+    raytraceGM<<<dg,db>>>(ptrDevPixels,this->ptrDevTabSphere,this->nbSphere,w,h,t);
+    }
+    else if (i % 3 == 1)
+    {
+    raytraceCM<<<dg,db>>>(ptrDevPixels, w, h, t);
+    }
+    else if (i % 3 == 2)
+    {
+    rayTracingSM<<<dg,db,size_octets>>>(ptrDevPixels, w, h, t, ptrDevTabSphere);
+    }
+    i++;
     Device::lastCudaError("rippling rgba uchar4 (after kernel)"); // facultatif, for debug only, remove for release
     }
 
